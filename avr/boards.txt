@@ -3,6 +3,8 @@
 menu.millis=millis()/micros()
 menu.TimerClockSource=Timer 1 Clock
 menu.LTO=LTO (1.6.11+ only)
+menu.chip=Chip
+menu.clock=Clock
 
 wonkystuffcore1.name=Rev.D (ATTiny85 Audio bootloader)
 
@@ -15,8 +17,16 @@ wonkystuffcore1.build.core=tiny
 wonkystuffcore1.build.board=core1_revd
 wonkystuffcore1.build.export_merged_output=false
 wonkystuffcore1.build.f_cpu=16000000L
+wonkystuffcore1.menu.chip.85=ATtiny85
+wonkystuffcore1.menu.chip.85.build.mcu=attiny85
+wonkystuffcore1.menu.chip.85.upload.maximum_size=7120
+wonkystuffcore1.menu.chip.85.upload.maximum_data_size=512
 wonkystuffcore1.build.mcu=attiny85
 wonkystuffcore1.build.variant=tinyX5
+wonkystuffcore1.menu.clock.16pll=16 MHz (PLL)
+wonkystuffcore1.menu.clock.16pll.bootloader.low_fuses=0xF1
+wonkystuffcore1.menu.clock.16pll.build.f_cpu=16000000L
+wonkystuffcore1.menu.clock.16pll.build.clocksource=6
 
 wonkystuffcore1.menu.millis.enabled=Enabled
 wonkystuffcore1.menu.millis.disabled=Disabled (saves flash)

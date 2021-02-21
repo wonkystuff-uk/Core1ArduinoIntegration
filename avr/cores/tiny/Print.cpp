@@ -1,21 +1,21 @@
 /*
  Print.cpp - Base class that provides print() and println()
  Copyright (c) 2008 David A. Mellis.  All right reserved.
- 
+
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
  License as published by the Free Software Foundation; either
  version 2.1 of the License, or (at your option) any later version.
- 
+
  This library is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  Lesser General Public License for more details.
- 
+
  You should have received a copy of the GNU Lesser General Public
  License along with this library; if not, write to the Free Software
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- 
+
  Modified 23 November 2006 by David A. Mellis
  */
 
@@ -200,6 +200,58 @@ size_t Print::println( fstr_t* s )
   return( n );
 }
 
+static int16_t printf_putchar(char c, FILE *fp)
+{
+  ((class Print *)(fdev_get_udata(fp)))->write((uint8_t)c);
+  return 0;
+}
+
+int16_t Print::printf(const char *ifsh, ...)
+{
+  FILE f;
+  va_list ap;
+
+  fdev_setup_stream(&f, printf_putchar, NULL, _FDEV_SETUP_WRITE);
+  fdev_set_udata(&f, this);
+  va_start(ap, ifsh);
+  return vfprintf(&f, ifsh, ap);
+}
+
+#ifdef FLASHSTRING_SUPPORT
+
+size_t Print::print(const __FlashStringHelper *ifsh)
+{
+  PGM_P p = reinterpret_cast<PGM_P>(ifsh);
+  size_t n = 0;
+  while (1) {
+    unsigned char c = pgm_read_byte(p++);
+    if (c == 0) break;
+    if (write(c)) n++;
+    else break;
+  }
+  return n;
+}
+
+size_t Print::println(const __FlashStringHelper *ifsh)
+{
+  size_t n = print(ifsh);
+  n += println();
+  return n;
+}
+
+int16_t Print::printf(const __FlashStringHelper *ifsh, ...)
+{
+  FILE f;
+  va_list ap;
+
+  fdev_setup_stream(&f, printf_putchar, NULL, _FDEV_SETUP_WRITE);
+  fdev_set_udata(&f, this);
+  va_start(ap, ifsh);
+  return vfprintf_P(&f, (const char *)ifsh, ap);
+}
+
+#endif
+
 // Private Methods /////////////////////////////////////////////////////////////
 
 size_t Print::printNumber(unsigned long n, uint8_t base) {
@@ -221,10 +273,10 @@ size_t Print::printNumber(unsigned long n, uint8_t base) {
   return write(str);
 }
 
-size_t Print::printFloat(double number, uint8_t digits) 
-{ 
+size_t Print::printFloat(double number, uint8_t digits)
+{
   size_t n = 0;
-  
+
   // Handle negative numbers
   if (number < 0.0)
   {
@@ -236,7 +288,7 @@ size_t Print::printFloat(double number, uint8_t digits)
   double rounding = 0.5;
   for (uint8_t i=0; i<digits; ++i)
     rounding /= 10.0;
-  
+
   number += rounding;
 
   // Extract the integer part of the number and print it
@@ -246,7 +298,7 @@ size_t Print::printFloat(double number, uint8_t digits)
 
   // Print the decimal point, but only if there are digits beyond
   if (digits > 0) {
-    n += print("."); 
+    n += print(".");
   }
 
   // Extract digits from the remainder one at a time
@@ -255,8 +307,8 @@ size_t Print::printFloat(double number, uint8_t digits)
     remainder *= 10.0;
     int toPrint = int(remainder);
     n += print(toPrint);
-    remainder -= toPrint; 
-  } 
-  
+    remainder -= toPrint;
+  }
+
   return n;
 }

@@ -1,0 +1,10 @@
+# Pretty much a dummy file, made so that 'upload with programmer' will work
+# There may be a better way
+
+hex2wav.name=Wav file
+
+hex2wav.communication=serial
+hex2wav.protocol=serial
+hex2wav.params.verbose=
+hex2wav.program.tool=hex2wav
+hex2wav.program.params.verbose=

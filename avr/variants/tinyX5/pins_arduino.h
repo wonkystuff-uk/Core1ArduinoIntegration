@@ -3,6 +3,7 @@
   Part of Arduino - http://www.arduino.cc/
 
   Copyright (c) 2007 David A. Mellis
+  Copyright (c) 2015~2020 Spence Konde
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -32,29 +33,49 @@
 #include <avr/pgmspace.h>
 
 #define NUM_DIGITAL_PINS            6
-#define NUM_ANALOG_INPUTS           16
+#define NUM_ANALOG_INPUTS           6
 #define analogInputToDigitalPin(p)  (((p) == 0) ? 5 : (((p) == 1) ? 2 : (((p) == 2) ? 4 :(((p) == 3) ? 3 : -1))))
 
 #define digitalPinHasPWM(p)         ((p) == 0 || (p) == 1 || (p)==4)
 
+#define ADC_TEMPERATURE 15
+
+//This part has a USI, not an SPI module. Accordingly, there is no MISO/MOSI in hardware. There's a DI and a DO. When the chip is used as master, DI is used as MISO, DO is MOSI; the defines here specify the pins for master mode, as SPI master is much more commonly used in Arduino-land than SPI slave, and these defines are required for compatibility. Be aware of this when using the USI SPI fucntionality (and also, be aware that the MISO and MOSI markings on the pinout diagram in the datasheet are for ISP programming, where the chip is a slave. The pinout diagram included with this core attempts to clarify this)
+
 #define SS   3
-#define MOSI 0
-#define MISO 1
+#define MOSI 1
+#define MISO 0
 #define SCK  2
 
 #define USI_DDR_PORT DDRB
+#define USI_SCK_PORT DDRB
 #define USCK_DD_PIN DDB2
 #define DO_DD_PIN DDB1
 #define DI_DD_PIN DDB0
 
+#  define DDR_USI DDRB
+#  define PORT_USI PORTB
+#  define PIN_USI PINB
+#  define PORT_USI_SDA PORTB0
+#  define PORT_USI_SCL PORTB2
+#  define PIN_USI_SDA PINB0
+#  define PIN_USI_SCL PINB2
+#  define USI_START_VECTOR USI_START_vect
+#  define USI_OVERFLOW_VECTOR USI_OVF_vect
+#  define DDR_USI_CL DDR_USI
+#  define PORT_USI_CL PORT_USI
+#  define PIN_USI_CL PIN_USI
+#ifndef USI_START_COND_INT
+#  define USI_START_COND_INT USISIF
+#endif
+
 static const uint8_t SDA = 0;
 static const uint8_t SCL = 2;
 
-//Ax constants cannot be used for digitalRead/digitalWrite/analogWrite functions, only analogRead().
-static const uint8_t A0 = 0;
-static const uint8_t A1 = 1;
-static const uint8_t A2 = 2;
-static const uint8_t A3 = 3;
+static const uint8_t A0 = 0x80 | 0;
+static const uint8_t A1 = 0x80 | 1;
+static const uint8_t A2 = 0x80 | 2;
+static const uint8_t A3 = 0x80 | 3;
 
 #define PIN_B0  ( 0)
 #define PIN_B1  ( 1)
@@ -63,17 +84,20 @@ static const uint8_t A3 = 3;
 #define PIN_B4  ( 4)
 #define PIN_B5  ( 5)
 
-#define LED_BUILTIN  ( 0)
+#define PIN_PB0  ( 0)
+#define PIN_PB1  ( 1)
+#define PIN_PB2  ( 2)
+#define PIN_PB3  ( 3)
+#define PIN_PB4  ( 4)
+#define PIN_PB5  ( 5)
+
+#define LED_BUILTIN  ( 1)
 
 //----------------------------------------------------------
 //----------------------------------------------------------
 //Core Configuration (used to be in core_build_options.h)
 
-//If Software Serial communications doesn't work, run the TinyTuner sketch provided with the core to give you a calibrated OSCCAL value.
-//Change the value here with the tuned value. By default this option uses the default value which the compiler will optimise out. 
-#define TUNED_OSCCAL_VALUE                        OSCCAL
-//e.g
-//#define TUNED_OSCCAL_VALUE                        0x57
+
 
 
 //Choosing not to initialise saves power and flash. 1 = initialise.
@@ -89,13 +113,13 @@ static const uint8_t A3 = 3;
   Where to put the software serial? (Arduino Digital pin numbers)
 */
 //WARNING, if using software, TX is on AIN0, RX is on AIN1. Comparator is favoured to use its interrupt for the RX pin.
-#define USE_SOFTWARE_SERIAL						  1
+#define USE_SOFTWARE_SERIAL           1
 //Please define the port on which the analog comparator is found.
-#define ANALOG_COMP_DDR						 	  DDRB
-#define ANALOG_COMP_PORT						  PORTB
-#define ANALOG_COMP_PIN						 	  PINB
-#define ANALOG_COMP_AIN0_BIT					  0
-#define ANALOG_COMP_AIN1_BIT					  1
+#define ANALOG_COMP_DDR               DDRB
+#define ANALOG_COMP_PORT              PORTB
+#define ANALOG_COMP_PIN               PINB
+#define ANALOG_COMP_AIN0_BIT          0
+#define ANALOG_COMP_AIN1_BIT          1
 
 /*
   Analog reference bit masks.
@@ -139,58 +163,62 @@ static const uint8_t A3 = 3;
 
 // these arrays map port names (e.g. port B) to the
 // appropriate addresses for various functions (e.g. reading
-// and writing) tiny45 only port B 
-const uint16_t PROGMEM port_to_mode_PGM[] = 
+// and writing) tiny45 only port B
+const uint16_t PROGMEM port_to_mode_PGM[] =
 {
-	NOT_A_PORT,
-	NOT_A_PORT,
-	(uint16_t)&DDRB,
+  NOT_A_PORT,
+  NOT_A_PORT,
+  (uint16_t)&DDRB,
 };
 
-const uint16_t PROGMEM port_to_output_PGM[] = 
+const uint16_t PROGMEM port_to_output_PGM[] =
 {
-	NOT_A_PORT,
-	NOT_A_PORT,
-	(uint16_t)&PORTB,
+  NOT_A_PORT,
+  NOT_A_PORT,
+  (uint16_t)&PORTB,
 };
 
-const uint16_t PROGMEM port_to_input_PGM[] = 
+const uint16_t PROGMEM port_to_input_PGM[] =
 {
-	NOT_A_PIN,
-	NOT_A_PIN,
-	(uint16_t)&PINB,
+  NOT_A_PIN,
+  NOT_A_PIN,
+  (uint16_t)&PINB,
 };
 
-const uint8_t PROGMEM digital_pin_to_port_PGM[] = 
+const uint8_t PROGMEM digital_pin_to_port_PGM[] =
 {
-	PB, /* 0 */
-	PB,
-	PB,
-	PB,
-	PB, 
-	PB, /* 5 */
-
-};
-
-const uint8_t PROGMEM digital_pin_to_bit_mask_PGM[] = 
-{
-	_BV(0), /* 0, port B */
-	_BV(1),
-	_BV(2),
-	_BV(3), /* 3 port B */
-	_BV(4),
-	_BV(5),
+  PB, /* 0 */
+  PB,
+  PB,
+  PB,
+  PB,
+  PB, /* 5 */
 
 };
 
-const uint8_t PROGMEM digital_pin_to_timer_PGM[] = 
+const uint8_t PROGMEM digital_pin_to_bit_mask_PGM[] =
 {
-	TIMER0A, /* OC0A */
-	TIMER0B, /* OC0B */
-	NOT_ON_TIMER,
-	NOT_ON_TIMER, 
-	TIMER1B, /*OC1B*/
-	NOT_ON_TIMER,
+  _BV(0), /* 0, port B */
+  _BV(1),
+  _BV(2),
+  _BV(3), /* 3 port B */
+  _BV(4),
+  _BV(5),
+
+};
+
+const uint8_t PROGMEM digital_pin_to_timer_PGM[] =
+{
+  TIMER0A, /* OC0A */
+  #ifdef TIMER1_PWM
+  TIMER1A, /* OC1A */
+  #else
+  TIMER0B, /* OC0B */
+  #endif
+  NOT_ON_TIMER,
+  NOT_ON_TIMER,
+  TIMER1B, /*OC1B*/
+  NOT_ON_TIMER,
 };
 
 #endif
@@ -202,9 +230,9 @@ const uint8_t PROGMEM digital_pin_to_timer_PGM[] =
 
 //Old code, just here for temporary backup until I decide it is not needed.
 /*//WARNING, if using software, RX must be on a pin which has a Pin change interrupt <= 7 (e.g. PCINT6, or PCINT1, but not PCINT8)
-#define USE_SOFTWARE_SERIAL						  1
+#define USE_SOFTWARE_SERIAL             1
 //These are set to match Optiboot pins.
-#define SOFTWARE_SERIAL_PORT 					  PORTB
-#define SOFTWARE_SERIAL_TX 						  0
-#define SOFTWARE_SERIAL_PIN 					  PINB
-#define SOFTWARE_SERIAL_RX 						  1*/
+#define SOFTWARE_SERIAL_PORT            PORTB
+#define SOFTWARE_SERIAL_TX              0
+#define SOFTWARE_SERIAL_PIN             PINB
+#define SOFTWARE_SERIAL_RX              1*/

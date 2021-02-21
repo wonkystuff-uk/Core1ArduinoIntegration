@@ -35,12 +35,14 @@
 #define OCT 8
 #ifdef BIN
 #define ABIN BIN
-//One of the ATtiny84 registers has a bit called BIN, so rename it to avoid compiler warnings. 
+//One of the ATtiny84 registers has a bit called BIN, so rename it to avoid compiler warnings.
 #undef BIN
 #endif
 #define BIN 2
 
 #define ARDUINO_CORE_PRINTABLE_SUPPORT
+
+#define FLASHSTRING_SUPPORT
 
 class Print;
 
@@ -53,7 +55,7 @@ public:
 };
 
 /* ...Printable */
-    
+
 typedef struct
 {
   char c;
@@ -71,14 +73,14 @@ class Print
     void setWriteError(int err = 1) { write_error = err; }
   public:
     Print() : write_error(0) {}
-  
+
     int getWriteError() { return write_error; }
     void clearWriteError() { setWriteError(0); }
-  
+
     virtual size_t write(uint8_t) = 0;
     size_t write(const char *str) { return write((const uint8_t *)str, strlen(str)); }
     virtual size_t write(const uint8_t *buffer, size_t size);
-    
+
     size_t print(fstr_t*);
     size_t print(const String &);
     size_t print(const char[]);
@@ -103,6 +105,14 @@ class Print
     size_t println(unsigned long, int = DEC);
     size_t println(double, int = 2);
     size_t println(void);
+
+    int16_t printf(const char *ifsh, ...);
+
+    #ifdef FLASHSTRING_SUPPORT
+    size_t print(const __FlashStringHelper *ifsh);
+    size_t println(const __FlashStringHelper *ifsh);
+    int16_t printf(const __FlashStringHelper *ifsh, ...);
+    #endif
 };
 
 #endif
