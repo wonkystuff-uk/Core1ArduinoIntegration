@@ -1,5 +1,0 @@
-commit 7db7f06ec33af157b9cf97500c54b367a9b464bb
-Author: Budi Prakosa <iyok@deadmediafm.org>
-Date:   Thu Aug 18 13:02:13 2016 +0700
-
-    remove midi list

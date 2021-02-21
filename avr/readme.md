@@ -1,14 +1,11 @@
+# Board support for Wonkystuff Core1 Rev.D
 
-[![Build Status](https://travis-ci.org/CocoMake7/CocoMake7Packager.svg?branch=master)](https://travis-ci.org/CocoMake7/CocoMake7Packager)
+First version: Basic integration with Arduino IDE 1.8.13. Test application
+has been built and `hex2wav.jar` seen to run and create audio.
 
-lets organize this later..
+`variants` and `cores` directories have been thinned out; `avrdude` and `bootloaders`
+directory have been removed since this integration is only intended to support the upload
+of code via audio.
 
-directory structure
-
-avr \
-	\libraries
-	\cores
-	\tools
-	\variants
-
-
+**`libraries` was mostly links to other repos, so this has also been emptied -- it might be
+nice to add the examples at some point**

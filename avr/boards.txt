@@ -1,83 +1,43 @@
-menu.bootloader=Bootloader
-menu.core=Core
-
-menu.chip=Chip
-menu.clock=Clock
-menu.pinmapping=Pin Mapping
-
 ##############################################################
 
-8bitmixtapeneo.name=8BitMixtapeNeo
+menu.millis=millis()/micros()
+menu.TimerClockSource=Timer 1 Clock
+menu.LTO=LTO (1.6.11+ only)
 
-8bitmixtapeneo.upload.protocol=usbasp
-8bitmixtapeneo.upload.maximum_size=7167
-8bitmixtapeneo.upload.speed=19200
-8bitmixtapeneo.upload.disable_flushing=true
-8bitmixtapeneo.upload.tool=hex2wav
+wonkystuffcore1.name=Rev.D (ATTiny85 Audio bootloader)
 
-8bitmixtapeneo.build.mcu=attiny85
-8bitmixtapeneo.build.board=AVR_COCOMAKE7
+wonkystuffcore1.upload.maximum_size=7167
+wonkystuffcore1.upload.maximum_data_size=512
+wonkystuffcore1.upload.tool=hex2wav
+wonkystuffcore1.upload.protocol=audio
 
-8bitmixtapeneo.bootloader.file=tinyaudioboot/AudioBootAttiny85_AudioPB3_LEDPB1.hex
-8bitmixtapeneo.bootloader.tool=arduino:avrdude
-8bitmixtapeneo.bootloader.unlock_bits=0xFF
-8bitmixtapeneo.bootloader.low_fuses=0xE1
-8bitmixtapeneo.bootloader.high_fuses=0xDD
-8bitmixtapeneo.bootloader.extended_fuses=0xFE
+wonkystuffcore1.build.core=tiny
+wonkystuffcore1.build.board=core1_revd
+wonkystuffcore1.build.export_merged_output=false
+wonkystuffcore1.build.f_cpu=16000000L
+wonkystuffcore1.build.mcu=attiny85
+wonkystuffcore1.build.variant=tinyX5
 
-##############################################################
+wonkystuffcore1.menu.millis.enabled=Enabled
+wonkystuffcore1.menu.millis.disabled=Disabled (saves flash)
+wonkystuffcore1.menu.millis.enabled.build.millis=
+wonkystuffcore1.menu.millis.disabled.build.millis=-DDISABLEMILLIS
 
-8bitmixtapeneo.menu.bootloader.tinyaudioboot=TinyAudioBoot Audio:PB3/PIN2 Led:PB1/PIN6
-8bitmixtapeneo.menu.bootloader.tinyaudioboot.upload.protocol=usbasp
-8bitmixtapeneo.menu.bootloader.tinyaudioboot.upload.maximum_size=7167
-8bitmixtapeneo.menu.bootloader.tinyaudioboot.upload.speed=19200
-8bitmixtapeneo.menu.bootloader.tinyaudioboot.upload.disable_flushing=true
-8bitmixtapeneo.menu.bootloader.tinyaudioboot.upload.tool=hex2wav
-8bitmixtapeneo.menu.bootloader.tinyaudioboot.bootloader.file=tinyaudioboot/AudioBootAttiny85_AudioPB3_LEDPB1.hex
-8bitmixtapeneo.menu.bootloader.tinyaudioboot.bootloader.tool=arduino:avrdude
-
-8bitmixtapeneo.menu.bootloader.empty=Empty Bootloader
-8bitmixtapeneo.menu.bootloader.empty.upload.protocol=usbasp
-8bitmixtapeneo.menu.bootloader.empty.upload.maximum_size=8192
-8bitmixtapeneo.menu.bootloader.empty.upload.speed=19200
-8bitmixtapeneo.menu.bootloader.empty.upload.disable_flushing=true
-8bitmixtapeneo.menu.bootloader.empty.upload.tool=avrdude
-8bitmixtapeneo.menu.bootloader.empty.bootloader.file=empty/empty_all.hex
-8bitmixtapeneo.menu.bootloader.empty.bootloader.tool=arduino:avrdude
-
-##############################################################
-
-8bitmixtapeneo.menu.core.arduinocore=Arduino Core 16MHz (PLL/NO.BOD)
-8bitmixtapeneo.menu.core.arduinocore.build.core=arduino:arduino
-8bitmixtapeneo.menu.core.arduinocore.build.variant=tiny8
-8bitmixtapeneo.menu.core.arduinocore.build.f_cpu=16000000L
-8bitmixtapeneo.menu.core.arduinocore.bootloader.low_fuses=0xE1
-8bitmixtapeneo.menu.core.arduinocore.bootloader.high_fuses=0xDD
-8bitmixtapeneo.menu.core.arduinocore.bootloader.extended_fuses=0xFE
-
-8bitmixtapeneo.menu.core.teenyriotcore=TeenyRiot Core 16MHz (PLL/NO.BOD)
-8bitmixtapeneo.menu.core.teenyriotcore.build.core=teenyriot-core
-8bitmixtapeneo.menu.core.teenyriotcore.build.variant=teenyriot
-8bitmixtapeneo.menu.core.teenyriotcore.build.f_cpu=16000000L
-8bitmixtapeneo.menu.core.teenyriotcore.bootloader.low_fuses=0xE1
-8bitmixtapeneo.menu.core.teenyriotcore.bootloader.high_fuses=0xDD
-8bitmixtapeneo.menu.core.teenyriotcore.bootloader.extended_fuses=0xFE
-
-8bitmixtapeneo.menu.core.attinycore=ATTinyCore(SpenceKonde) 16MHz(PLL/NO.BOD)
-8bitmixtapeneo.menu.core.attinycore.build.core=tiny
-8bitmixtapeneo.menu.core.attinycore.build.variant=tinyX5
-8bitmixtapeneo.menu.core.attinycore.build.f_cpu=16000000L
-8bitmixtapeneo.menu.core.attinycore.bootloader.low_fuses=0xE1
-8bitmixtapeneo.menu.core.attinycore.bootloader.high_fuses=0xDD
-8bitmixtapeneo.menu.core.attinycore.bootloader.extended_fuses=0xFE
-8bitmixtapeneo.menu.core.attinycore.build.board=AVR_ATTINYX5
-
-8bitmixtapeneo.menu.core.barebone=Barebone/No Core 16MHz (PLL/NO.BOD)
-8bitmixtapeneo.menu.core.barebone.build.core=empty
-8bitmixtapeneo.menu.core.barebone.build.variant=tinyX5
-8bitmixtapeneo.menu.core.barebone.build.f_cpu=16000000L
-8bitmixtapeneo.menu.core.barebone.bootloader.low_fuses=0xE1
-8bitmixtapeneo.menu.core.barebone.bootloader.high_fuses=0xDD
-8bitmixtapeneo.menu.core.barebone.bootloader.extended_fuses=0xFE
+wonkystuffcore1.menu.LTO.enable=Enabled
+wonkystuffcore1.menu.LTO.enable.ltocflags=-flto -fno-fat-lto-objects
+wonkystuffcore1.menu.LTO.enable.ltoelfflags=-g -flto -fuse-linker-plugin
+wonkystuffcore1.menu.LTO.enable.ltocppflags=-flto
+wonkystuffcore1.menu.LTO.enable.ltoarcmd=gcc-
+wonkystuffcore1.menu.LTO.disable=Disabled
+wonkystuffcore1.menu.LTO.disable.ltocflags=
+wonkystuffcore1.menu.LTO.disable.ltoelfflags=
+wonkystuffcore1.menu.LTO.disable.ltocppflags=
+wonkystuffcore1.menu.LTO.disable.ltoarcmd=
+wonkystuffcore1.menu.TimerClockSource.default=CPU (CPU frequency)
+wonkystuffcore1.menu.TimerClockSource.default.build.pllsettings=
+wonkystuffcore1.menu.TimerClockSource.pll=64MHz
+wonkystuffcore1.menu.TimerClockSource.pll.build.pllsettings=-DPLLTIMER1
+wonkystuffcore1.menu.TimerClockSource.lowpll=32MHz
+wonkystuffcore1.menu.TimerClockSource.lowpll.build.pllsettings=-DLOWPLLTIMER1
 
 ##############################################################
